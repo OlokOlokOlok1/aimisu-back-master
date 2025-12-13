@@ -9,7 +9,6 @@ class EventSeeder extends Seeder
 {
     public function run()
     {
-        // Academic Events
         Event::firstOrCreate(
             ['title' => 'ISU Opening Convocation 2025'],
             [
@@ -23,7 +22,6 @@ class EventSeeder extends Seeder
                 'created_by' => 2,
                 'status' => 'published',
                 'daily_times' => json_encode(['2025-08-10' => '08:00-17:00']),
-                'registration' => 850,
                 'published_at' => now(),
             ]
         );
@@ -42,7 +40,6 @@ class EventSeeder extends Seeder
                 'created_by' => 2,
                 'status' => 'published',
                 'daily_times' => json_encode(['2025-12-02' => '09:00-17:00']),
-                'registration' => 650,
                 'published_at' => now(),
             ]
         );
@@ -60,7 +57,6 @@ class EventSeeder extends Seeder
                 'created_by' => 2,
                 'status' => 'published',
                 'daily_times' => json_encode(['2025-12-03' => '13:00-18:00']),
-                'registration' => 180,
                 'published_at' => now(),
             ]
         );
@@ -78,7 +74,6 @@ class EventSeeder extends Seeder
                 'created_by' => 2,
                 'status' => 'published',
                 'daily_times' => json_encode(['2025-12-04' => '10:00-16:00']),
-                'registration' => 420,
                 'published_at' => now(),
             ]
         );
@@ -96,7 +91,6 @@ class EventSeeder extends Seeder
                 'created_by' => 2,
                 'status' => 'published',
                 'daily_times' => json_encode(['2025-12-05' => '09:00-17:00']),
-                'registration' => 1200,
                 'published_at' => now(),
             ]
         );
@@ -114,7 +108,6 @@ class EventSeeder extends Seeder
                 'created_by' => 2,
                 'status' => 'published',
                 'daily_times' => json_encode(['2025-12-06' => '14:00-18:00']),
-                'registration' => 95,
                 'published_at' => now(),
             ]
         );
@@ -132,7 +125,6 @@ class EventSeeder extends Seeder
                 'created_by' => 2,
                 'status' => 'published',
                 'daily_times' => json_encode(['2025-12-07' => '08:00-17:00']),
-                'registration' => 920,
                 'published_at' => now(),
             ]
         );
@@ -150,7 +142,6 @@ class EventSeeder extends Seeder
                 'created_by' => 2,
                 'status' => 'published',
                 'daily_times' => json_encode(['2025-12-08' => '10:00-17:00']),
-                'registration' => 310,
                 'published_at' => now(),
             ]
         );
@@ -168,7 +159,6 @@ class EventSeeder extends Seeder
                 'created_by' => 2,
                 'status' => 'published',
                 'daily_times' => json_encode(['2025-12-09' => '09:00-17:00']),
-                'registration' => 480,
                 'published_at' => now(),
             ]
         );
@@ -192,7 +182,6 @@ class EventSeeder extends Seeder
                     '2025-12-13' => '07:00-22:00',
                     '2025-12-14' => '07:00-22:00',
                 ]),
-                'registration' => 1450,
                 'published_at' => now(),
             ]
         );
@@ -210,7 +199,6 @@ class EventSeeder extends Seeder
                 'created_by' => 2,
                 'status' => 'published',
                 'daily_times' => json_encode(['2025-12-15' => '16:00-21:00']),
-                'registration' => 980,
                 'published_at' => now(),
             ]
         );
@@ -233,7 +221,6 @@ class EventSeeder extends Seeder
                     '2025-12-17' => '14:00-17:00',
                     '2025-12-18' => '14:00-17:00',
                 ]),
-                'registration' => 240,
                 'published_at' => now(),
             ]
         );
@@ -254,7 +241,6 @@ class EventSeeder extends Seeder
                     '2025-12-19' => '09:00-18:00',
                     '2025-12-20' => '09:00-18:00',
                 ]),
-                'registration' => 450,
                 'published_at' => now(),
             ]
         );
@@ -275,7 +261,6 @@ class EventSeeder extends Seeder
                     '2025-12-21' => '08:00-18:00',
                     '2025-12-22' => '09:00-17:00',
                 ]),
-                'registration' => 680,
                 'published_at' => now(),
             ]
         );
@@ -293,7 +278,6 @@ class EventSeeder extends Seeder
                 'created_by' => 3,
                 'status' => 'published',
                 'daily_times' => json_encode(['2025-12-28' => '15:00-22:00']),
-                'registration' => 1450,
                 'published_at' => now(),
             ]
         );
@@ -311,7 +295,6 @@ class EventSeeder extends Seeder
                 'created_by' => 4,
                 'status' => 'published',
                 'daily_times' => json_encode(['2025-12-29' => '10:00-16:00']),
-                'registration' => 420,
                 'published_at' => now(),
             ]
         );
@@ -329,7 +312,6 @@ class EventSeeder extends Seeder
                 'created_by' => 4,
                 'status' => 'published',
                 'daily_times' => json_encode(['2025-12-30' => '09:00-16:00']),
-                'registration' => 680,
                 'published_at' => now(),
             ]
         );
@@ -351,7 +333,6 @@ class EventSeeder extends Seeder
                     '2026-01-03' => '12:00-21:00',
                     '2026-01-04' => '12:00-20:00',
                 ]),
-                'registration' => 1850,
                 'published_at' => now(),
             ]
         );
@@ -369,7 +350,6 @@ class EventSeeder extends Seeder
                 'created_by' => 2,
                 'status' => 'published',
                 'daily_times' => json_encode(['2026-01-05' => '10:00-14:00']),
-                'registration' => 280,
                 'published_at' => now(),
             ]
         );
@@ -391,7 +371,6 @@ class EventSeeder extends Seeder
                     '2026-01-09' => '17:00-22:00',
                     '2026-01-10' => '17:00-22:00',
                 ]),
-                'registration' => 750,
                 'published_at' => now(),
             ]
         );
@@ -412,7 +391,6 @@ class EventSeeder extends Seeder
                 'created_by' => 2,
                 'status' => 'pending_approval',
                 'daily_times' => json_encode(['2026-01-12' => '13:00-17:00']),
-                'registration' => 0,
                 'published_at' => null,
             ]
         );
@@ -430,7 +408,6 @@ class EventSeeder extends Seeder
                 'created_by' => 3,
                 'status' => 'pending_approval',
                 'daily_times' => json_encode(['2026-01-15' => '08:00-12:00']),
-                'registration' => 0,
                 'published_at' => null,
             ]
         );
@@ -448,7 +425,6 @@ class EventSeeder extends Seeder
                 'created_by' => 4,
                 'status' => 'pending_approval',
                 'daily_times' => json_encode(['2026-01-20' => '14:00-17:00']),
-                'registration' => 0,
                 'published_at' => null,
             ]
         );

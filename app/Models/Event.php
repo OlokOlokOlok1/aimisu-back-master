@@ -4,19 +4,26 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
-
 class Event extends Model
 {
     use SoftDeletes;
 
     protected $fillable = [
-        'title', 'description', 'category',
-        'start_date', 'end_date', 'daily_times',
-        'location_id', 'department_id', 'organization_id', 'created_by',
-        'status', 'rejection_reason',
+        'title',
+        'description',
+        'category',
+        'start_date',
+        'end_date',
+        'daily_times',
+        'location_id',
+        'department_id',
+        'organization_id',
+        'created_by',
+        'status',
+        'rejection_reason',
         'published_at',
-        'registration',
     ];
 
     protected $casts = [
@@ -27,6 +34,18 @@ class Event extends Model
     ];
 
     protected $with = ['organization', 'createdBy', 'location'];
+
+    protected $appends = ['registrations_count'];
+
+    public function getRegistrationsCountAttribute(): int
+    {
+        return $this->registrations()->count();
+    }
+
+    public function registrations(): HasMany
+    {
+        return $this->hasMany(EventRegistration::class);
+    }
 
     public function organization(): BelongsTo
     {

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Event;
+use App\Models\EventRegistration;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Log;
@@ -26,7 +27,7 @@ class EventController extends Controller
             ->paginate(10);
 
         return response()->json([
-            'data' => $events,
+            'data'     => $events,
             'org_name' => $request->user()->organization->name ?? 'Your Organization',
         ]);
     }
@@ -34,19 +35,19 @@ class EventController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate([
-            'title'          => 'required|string|max:255',
-            'description'    => 'required|string',
-            'category'       => 'required|string',
-            'start_date'     => 'required|date_format:Y-m-d',
-            'end_date'       => 'required|date_format:Y-m-d|after_or_equal:start_date',
-            'daily_times'    => 'nullable|array',
-            'location_id'    => 'nullable|exists:locations,id',
-            'location_name'  => 'nullable|string',
+            'title'         => 'required|string|max:255',
+            'description'   => 'required|string',
+            'category'      => 'required|string',
+            'start_date'    => 'required|date_format:Y-m-d',
+            'end_date'      => 'required|date_format:Y-m-d|after_or_equal:start_date',
+            'daily_times'   => 'nullable|array',
+            'location_id'   => 'nullable|exists:locations,id',
+            'location_name' => 'nullable|string',
         ]);
 
-        $data['created_by'] = $request->user()->id;
+        $data['created_by']      = $request->user()->id;
         $data['organization_id'] = $request->user()->organization_id;
-        $data['status'] = 'pending_approval';
+        $data['status']          = 'pending_approval';
 
         $event = Event::create($data);
 
@@ -76,14 +77,14 @@ class EventController extends Controller
         }
 
         $validator = Validator::make($request->all(), [
-            'title'          => 'required|string|max:255',
-            'description'    => 'required|string',
-            'category'       => 'required|string',
-            'start_date'     => 'required|date',
-            'end_date'       => 'required|date|after_or_equal:start_date',
-            'daily_times'    => 'nullable|array',
-            'location_id'    => 'nullable|exists:locations,id',
-            'location_name'  => 'nullable|string',
+            'title'         => 'required|string|max:255',
+            'description'   => 'required|string',
+            'category'      => 'required|string',
+            'start_date'    => 'required|date',
+            'end_date'      => 'required|date|after_or_equal:start_date',
+            'daily_times'   => 'nullable|array',
+            'location_id'   => 'nullable|exists:locations,id',
+            'location_name' => 'nullable|string',
         ]);
 
         if ($validator->fails()) {
@@ -143,6 +144,43 @@ class EventController extends Controller
         return response()->json([
             'message' => 'Event submitted for approval',
             'data'    => $event->fresh()->load('organization', 'createdBy', 'location'),
+        ]);
+    }
+
+
+    public function register(Request $request, Event $event)
+    {
+        if ($event->status !== 'published') {
+            return response()->json(['message' => 'Event is not open for registration'], 400);
+        }
+
+        $registration = EventRegistration::firstOrCreate(
+            [
+                'event_id' => $event->id,
+                'user_id'  => $request->user()->id,
+            ],
+            [
+                'status' => 'registered',
+            ]
+        );
+
+        return response()->json([
+            'message' => 'Registered successfully',
+            'data'    => $registration,
+            'registrations_count' => $event->registrations()->count(),
+        ]);
+    }
+
+
+    public function cancelRegistration(Request $request, Event $event)
+    {
+        EventRegistration::where('event_id', $event->id)
+            ->where('user_id', $request->user()->id)
+            ->delete();
+
+        return response()->json([
+            'message' => 'Registration cancelled',
+            'registrations_count' => $event->registrations()->count(),
         ]);
     }
 }

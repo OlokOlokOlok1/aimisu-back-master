@@ -27,9 +27,6 @@ return new class extends Migration
             $table->enum('status', ['draft', 'pending_approval', 'published', 'rejected'])->default('draft');
             $table->text('rejection_reason')->nullable();
 
-
-            $table->unsignedInteger('registration')->default(0);
-
             $table->timestamp('published_at')->nullable();
             $table->softDeletes();
             $table->timestamps();
