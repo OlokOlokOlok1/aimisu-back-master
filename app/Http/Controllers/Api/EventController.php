@@ -147,6 +147,19 @@ class EventController extends Controller
         ]);
     }
 
+    public function myRegistrations(Request $request)
+    {
+        $registrations = EventRegistration::where('user_id', $request->user()->id)
+            ->with(['event' => function ($query) {
+                $query->with('organization', 'location');
+            }])
+            ->latest('created_at')
+            ->get();
+
+        return response()->json([
+            'data' => $registrations,
+        ]);
+    }
 
     public function register(Request $request, Event $event)
     {
