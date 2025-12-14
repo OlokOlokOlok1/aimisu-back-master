@@ -24,4 +24,3 @@ class EventRegistration extends Model
     }
 }
 
-}
