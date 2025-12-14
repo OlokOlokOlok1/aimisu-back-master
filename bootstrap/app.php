@@ -12,7 +12,12 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        // Register custom route middlewares here
+        // Register CORS middleware for API routes FIRST
+        $middleware->api(prepend: [
+            \Illuminate\Http\Middleware\HandleCors::class,  // ← ADD THIS
+        ]);
+
+        // Your custom aliases
         $middleware->alias([
             'check.admin' => \App\Http\Middleware\CheckAdmin::class,
             'check.org_admin' => \App\Http\Middleware\CheckOrgAdmin::class,
