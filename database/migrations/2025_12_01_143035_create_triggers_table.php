@@ -97,7 +97,6 @@ return new class extends Migration
             END
         ');
 
-        // USERS table triggers
         DB::unprepared('
             CREATE TRIGGER users_insert
             AFTER INSERT ON users
@@ -158,7 +157,6 @@ return new class extends Migration
             END
         ');
 
-        // LOCATIONS table triggers
         DB::unprepared('
             CREATE TRIGGER locations_insert
             AFTER INSERT ON locations

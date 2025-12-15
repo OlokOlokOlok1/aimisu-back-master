@@ -14,8 +14,8 @@ class DashboardController extends Controller
     public function adminDashboard()
     {
         $today = Carbon::today();
-        $weekStart = $today->copy()->startOfWeek();
-        $weekEnd = $today->copy()->endOfWeek();
+        $weekEnd = $today;
+        $weekStart = $today->copy()->subDays(30);
 
         $eventsToday = Event::published()
             ->whereDate('start_date', '<=', $today)
@@ -31,7 +31,6 @@ class DashboardController extends Controller
         $pendingAnnouncements = Announcement::where('status', 'pending_approval')->count();
         $totalRegistrations = EventRegistration::count();
 
-        // Get ALL published events with registration counts
         $events = Event::published()
             ->withCount('registrations')
             ->orderBy('start_date', 'desc')
@@ -71,7 +70,7 @@ class DashboardController extends Controller
             ->whereDate('start_date', '>=', $today)
             ->count();
 
-        $monthlyRegistrations = EventRegistration::whereHas('event', function($q) use ($orgId, $monthStart, $monthEnd) {
+        $monthlyRegistrations = EventRegistration::whereHas('event', function ($q) use ($orgId, $monthStart, $monthEnd) {
             $q->where('organization_id', $orgId)
                 ->where('status', 'published')
                 ->whereBetween('start_date', [$monthStart, $monthEnd]);
@@ -88,8 +87,8 @@ class DashboardController extends Controller
         $labels = $events->pluck('title')->toArray();
         $values = $events->pluck('registrations_count')->toArray();
 
-        $weekStart = $today->copy()->startOfWeek();
-        $weekEnd = $today->copy()->endOfWeek();
+        $weekEnd = $today;
+        $weekStart = $today->copy()->subDays(30);
 
         $weekEvents = Event::where('organization_id', $orgId)
             ->where('status', 'published')

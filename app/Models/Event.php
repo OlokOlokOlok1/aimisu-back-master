@@ -19,19 +19,27 @@ class Event extends Model
         'end_date',
         'daily_times',
         'location_id',
+        'location_name',
+        'location_latitude',
+        'location_longitude',
         'department_id',
         'organization_id',
         'created_by',
+        'visibility_scope',
+        'visible_departments',
         'status',
         'rejection_reason',
         'published_at',
     ];
 
     protected $casts = [
-        'daily_times'  => 'json',
-        'start_date'   => 'date',
-        'end_date'     => 'date',
-        'published_at' => 'datetime',
+        'daily_times'         => 'json',
+        'visible_departments' => 'json',
+        'start_date'          => 'date',
+        'end_date'            => 'date',
+        'published_at'        => 'datetime',
+        'location_latitude'   => 'float',
+        'location_longitude'  => 'float',
     ];
 
     protected $with = ['organization', 'createdBy', 'location'];
@@ -66,21 +74,37 @@ class Event extends Model
     public function getStartDateTime($date)
     {
         $dateStr = $date->format('Y-m-d');
-        if (isset($this->daily_times[$dateStr])) {
-            [$start, $end] = explode('-', $this->daily_times[$dateStr]);
-            return $date->format('Y-m-d') . ' ' . $start;
+        if (!isset($this->daily_times[$dateStr])) {
+            return null;
         }
-        return null;
+
+        $entry = $this->daily_times[$dateStr];
+
+        if (is_array($entry)) {
+            $start = $entry['start'] ?? null;
+        } else {
+            [$start, $end] = explode('-', $entry);
+        }
+
+        return $start ? $date->format('Y-m-d') . ' ' . $start : null;
     }
 
     public function getEndDateTime($date)
     {
         $dateStr = $date->format('Y-m-d');
-        if (isset($this->daily_times[$dateStr])) {
-            [$start, $end] = explode('-', $this->daily_times[$dateStr]);
-            return $date->format('Y-m-d') . ' ' . $end;
+        if (!isset($this->daily_times[$dateStr])) {
+            return null;
         }
-        return null;
+
+        $entry = $this->daily_times[$dateStr];
+
+        if (is_array($entry)) {
+            $end = $entry['end'] ?? null;
+        } else {
+            [$start, $end] = explode('-', $entry);
+        }
+
+        return $end ? $date->format('Y-m-d') . ' ' . $end : null;
     }
 
     public function scopePublished($query)

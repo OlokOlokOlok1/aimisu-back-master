@@ -12,7 +12,6 @@ class LocationController extends Controller
     {
         $query = Location::query();
 
-        // Search by name
         if ($request->has('search') && $request->search) {
             $search = $request->search;
             $query->where('name', 'like', "%{$search}%");

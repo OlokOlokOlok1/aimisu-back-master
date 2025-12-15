@@ -22,6 +22,7 @@ class EventController extends Controller
     public function mySubmissions(Request $request)
     {
         $events = Event::where('created_by', $request->user()->id)
+            ->whereIn('status', ['draft', 'pending_approval', 'rejected'])
             ->with('organization', 'createdBy', 'location')
             ->latest('created_at')
             ->paginate(10);
@@ -34,27 +35,51 @@ class EventController extends Controller
 
     public function store(Request $request)
     {
-        $data = $request->validate([
-            'title'         => 'required|string|max:255',
-            'description'   => 'required|string',
-            'category'      => 'required|string',
-            'start_date'    => 'required|date_format:Y-m-d',
-            'end_date'      => 'required|date_format:Y-m-d|after_or_equal:start_date',
-            'daily_times'   => 'nullable|array',
-            'location_id'   => 'nullable|exists:locations,id',
-            'location_name' => 'nullable|string',
-        ]);
+        try {
+            $user = $request->user();
 
-        $data['created_by']      = $request->user()->id;
-        $data['organization_id'] = $request->user()->organization_id;
-        $data['status']          = 'pending_approval';
+            if (!$user->organization_id) {
+                return response()->json([
+                    'message' => 'You must be assigned to an organization to create events',
+                    'error'   => 'Missing organization_id',
+                ], 403);
+            }
 
-        $event = Event::create($data);
+            $data = $request->validate([
+                'title'              => 'required|string|max:255',
+                'description'        => 'required|string',
+                'category'           => 'required|string',
+                'start_date'         => 'required|date_format:Y-m-d',
+                'end_date'           => 'required|date_format:Y-m-d|after_or_equal:start_date',
+                'daily_times'        => 'nullable|array',
+                'location_id'        => 'nullable|exists:locations,id',
+                'location_name'      => 'nullable|string',
+                'location_latitude'  => 'nullable|numeric',
+                'location_longitude' => 'nullable|numeric',
+            ]);
 
-        return response()->json([
-            'message' => 'Event created',
-            'data'    => $event->load('organization', 'createdBy', 'location'),
-        ], 201);
+            $data['created_by']      = $user->id;
+            $data['organization_id'] = $user->organization_id;
+            $data['status']          = 'pending_approval';
+
+            $event = Event::create($data);
+
+            return response()->json([
+                'message' => 'Event created successfully',
+                'data'    => $event->load('organization', 'createdBy', 'location'),
+            ], 201);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'message' => 'Validation failed',
+                'errors'  => $e->errors(),
+            ], 422);
+        } catch (\Exception $e) {
+            Log::error('Event creation failed: ' . $e->getMessage());
+            return response()->json([
+                'message' => 'Event creation failed',
+                'error'   => $e->getMessage(),
+            ], 500);
+        }
     }
 
     public function show(Event $event)
@@ -77,14 +102,16 @@ class EventController extends Controller
         }
 
         $validator = Validator::make($request->all(), [
-            'title'         => 'required|string|max:255',
-            'description'   => 'required|string',
-            'category'      => 'required|string',
-            'start_date'    => 'required|date',
-            'end_date'      => 'required|date|after_or_equal:start_date',
-            'daily_times'   => 'nullable|array',
-            'location_id'   => 'nullable|exists:locations,id',
-            'location_name' => 'nullable|string',
+            'title'              => 'required|string|max:255',
+            'description'        => 'required|string',
+            'category'           => 'required|string',
+            'start_date'         => 'required|date_format:Y-m-d',
+            'end_date'           => 'required|date_format:Y-m-d|after_or_equal:start_date',
+            'daily_times'        => 'nullable|array',
+            'location_id'        => 'nullable|exists:locations,id',
+            'location_name'      => 'nullable|string',
+            'location_latitude'  => 'nullable|numeric',
+            'location_longitude' => 'nullable|numeric',
         ]);
 
         if ($validator->fails()) {
@@ -98,11 +125,9 @@ class EventController extends Controller
         $data = $validator->validated();
 
         if ($event->status === 'rejected') {
-            $data['status'] = 'pending_approval';
             $data['rejection_reason'] = null;
-        } else {
-            $data['status'] = 'draft';
         }
+        $data['status'] = 'pending_approval';
 
         $event->update($data);
 
@@ -126,7 +151,7 @@ class EventController extends Controller
 
         $event->delete();
 
-        return response()->json(['message' => 'Event deleted']);
+        return response()->json(['message' => 'Event deleted successfully']);
     }
 
     public function submitForApproval(Request $request, Event $event)
@@ -135,7 +160,7 @@ class EventController extends Controller
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
-        if (!in_array($event->status, ['pending_approval', 'draft'], true)) {
+        if (!in_array($event->status, ['pending_approval', 'draft', 'rejected'], true)) {
             return response()->json(['message' => 'Event cannot be submitted'], 400);
         }
 
@@ -172,14 +197,12 @@ class EventController extends Controller
                 'event_id' => $event->id,
                 'user_id'  => $request->user()->id,
             ],
-            [
-                'status' => 'registered',
-            ]
+            ['status' => 'registered']
         );
 
         return response()->json([
-            'message' => 'Registered successfully',
-            'data'    => $registration,
+            'message'             => 'Registered successfully',
+            'data'                => $registration,
             'registrations_count' => $event->registrations()->count(),
         ]);
     }
@@ -191,12 +214,11 @@ class EventController extends Controller
             ->delete();
 
         return response()->json([
-            'message' => 'Registration cancelled',
+            'message'             => 'Registration cancelled',
             'registrations_count' => $event->registrations()->count(),
         ]);
     }
 
-    // ✅ ADD THIS METHOD
     public function getRegistrations(Event $event)
     {
         $registrations = $event->registrations()
@@ -206,7 +228,7 @@ class EventController extends Controller
 
         return response()->json([
             'count' => $registrations->count(),
-            'data' => $registrations,
+            'data'  => $registrations,
         ]);
     }
 }

@@ -23,7 +23,6 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::middleware('check.admin')->group(function () {
         Route::get('/admin/pending-approvals', [AdminController::class, 'pendingApprovals']);
-        Route::post('/admin/check-conflicts', [AdminController::class, 'checkConflicts']);
         Route::post('/admin/events/{event}/approve', [AdminController::class, 'approveEvent']);
         Route::post('/admin/events/{event}/reject', [AdminController::class, 'rejectEvent']);
         Route::post('/admin/announcements/{announcement}/approve', [AdminController::class, 'approveAnnouncement']);

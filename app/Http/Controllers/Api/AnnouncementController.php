@@ -24,6 +24,7 @@ class AnnouncementController extends Controller
     public function mySubmissions(Request $request)
     {
         $announcements = Announcement::where('created_by', $request->user()->id)
+            ->whereIn('status', ['draft', 'pending_approval', 'rejected'])
             ->latest('created_at')
             ->paginate(10);
 

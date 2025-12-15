@@ -14,7 +14,7 @@ class AnnouncementSeeder extends Seeder
             [
                 'content' => 'This is the new Aimisu campus event and announcement portal.',
                 'organization_id' => 1,
-                'created_by' => 1, // Admin ID
+                'created_by' => 1,
                 'status' => 'published',
                 'published_at' => now(),
             ]

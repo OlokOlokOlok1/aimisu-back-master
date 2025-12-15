@@ -20,7 +20,6 @@ class EventRegistrationSeeder extends Seeder
         }
 
         foreach ($events as $event) {
-            // BIGGER registration numbers per event
             if ($event->category === 'cultural') {
                 $registrationCount = rand(300, 500);
             } elseif ($event->category === 'sports') {

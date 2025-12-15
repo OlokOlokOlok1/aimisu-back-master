@@ -35,12 +35,12 @@ class UserSeeder extends Seeder
     private function createAdmins($coe, $cas, $acm, $ieee, $ssc, $englishClub, $forum)
     {
         $admins = [
-            ['email' => 'admin@aimisu.edu.ph', 'name' => 'System Admin', 'role' => 'admin'],
-            ['email' => 'orgadmin@aimisu.edu.ph', 'name' => 'ACM Admin', 'role' => 'org_admin'],
-            ['email' => 'ieeeadmin@aimisu.edu.ph', 'name' => 'IEEE Admin', 'role' => 'org_admin'],
-            ['email' => 'englishadmin@aimisu.edu.ph', 'name' => 'English Club Admin', 'role' => 'org_admin'],
-            ['email' => 'sscadmin@aimisu.edu.ph', 'name' => 'SSC Admin', 'role' => 'org_admin'],
-            ['email' => 'forumadmin@aimisu.edu.ph', 'name' => 'Forum Admin', 'role' => 'org_admin'],
+            ['email' => 'admin@aimisu.edu.ph', 'name' => 'System Admin', 'role' => 'admin', 'org' => null],
+            ['email' => 'orgadmin@aimisu.edu.ph', 'name' => 'ACM Admin', 'role' => 'org_admin', 'org' => $acm],
+            ['email' => 'ieeeadmin@aimisu.edu.ph', 'name' => 'IEEE Admin', 'role' => 'org_admin', 'org' => $ieee],
+            ['email' => 'englishadmin@aimisu.edu.ph', 'name' => 'English Club Admin', 'role' => 'org_admin', 'org' => $englishClub],
+            ['email' => 'sscadmin@aimisu.edu.ph', 'name' => 'SSC Admin', 'role' => 'org_admin', 'org' => $ssc],
+            ['email' => 'forumadmin@aimisu.edu.ph', 'name' => 'Forum Admin', 'role' => 'org_admin', 'org' => $forum],
         ];
 
         foreach ($admins as $admin) {
@@ -52,6 +52,7 @@ class UserSeeder extends Seeder
                     'role' => $admin['role'],
                     'phone' => null,
                     'profile_photo_url' => null,
+                    'organization_id' => $admin['org']?->id,
                 ]
             );
         }

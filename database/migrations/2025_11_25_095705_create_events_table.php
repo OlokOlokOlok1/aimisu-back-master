@@ -20,6 +20,11 @@ return new class extends Migration
             $table->json('daily_times')->nullable();
 
             $table->foreignId('location_id')->nullable()->constrained()->onDelete('set null');
+
+            $table->string('location_name')->nullable();
+            $table->decimal('location_latitude', 10, 7)->nullable();
+            $table->decimal('location_longitude', 10, 7)->nullable();
+
             $table->foreignId('department_id')->nullable()->constrained()->onDelete('set null');
             $table->foreignId('organization_id')->constrained()->onDelete('cascade');
             $table->foreignId('created_by')->constrained('users')->onDelete('cascade');
