@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+
 class Event extends Model
 {
     use SoftDeletes;
@@ -80,5 +81,10 @@ class Event extends Model
             return $date->format('Y-m-d') . ' ' . $end;
         }
         return null;
+    }
+
+    public function scopePublished($query)
+    {
+        return $query->where('status', 'published');
     }
 }
