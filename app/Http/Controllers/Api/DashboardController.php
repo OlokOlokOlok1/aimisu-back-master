@@ -1,58 +1,118 @@
 <?php
 
-namespace App\Models;
+namespace App\Http\Controllers\Api;
 
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\SoftDeletes;
+use App\Http\Controllers\Controller;
+use App\Models\Event;
+use App\Models\Announcement;
+use App\Models\EventRegistration;
+use Carbon\Carbon;
+use Illuminate\Http\Request;
 
-class Event extends Model
+class DashboardController extends Controller
 {
-    use SoftDeletes;
-
-    protected $fillable = [
-        'title',
-        'description',
-        'category',
-        'start_date',
-        'end_date',
-        'daily_times',
-        'location_id',
-        'organization_id',
-        'created_by',
-        'status',
-        'rejection_reason',
-        'published_at',
-    ];
-
-    protected $casts = [
-        'daily_times' => 'array',
-        'published_at' => 'datetime',
-    ];
-
-    // ✅ ADD THIS SCOPE - fixes your error!
-    public function scopePublished($query)
+    public function adminDashboard()
     {
-        return $query->where('status', 'published');
+        $today = Carbon::today();
+        $weekStart = $today->copy()->startOfWeek();
+        $weekEnd = $today->copy()->endOfWeek();
+
+        $eventsToday = Event::published()
+            ->whereDate('start_date', '<=', $today)
+            ->whereDate('end_date', '>=', $today)
+            ->count();
+
+        $eventsThisWeek = Event::published()
+            ->whereDate('start_date', '<=', $weekEnd)
+            ->whereDate('end_date', '>=', $weekStart)
+            ->count();
+
+        $pendingEvents = Event::where('status', 'pending_approval')->count();
+        $pendingAnnouncements = Announcement::where('status', 'pending_approval')->count();
+        $totalRegistrations = EventRegistration::count();
+
+        // Get ALL published events with registration counts
+        $events = Event::published()
+            ->withCount('registrations')
+            ->orderBy('start_date', 'desc')
+            ->get();
+
+        $labels = $events->pluck('title')->toArray();
+        $values = $events->pluck('registrations_count')->toArray();
+
+        $weekEvents = Event::published()
+            ->withCount('registrations')
+            ->whereDate('start_date', '<=', $weekEnd)
+            ->whereDate('end_date', '>=', $weekStart)
+            ->orderBy('start_date')
+            ->get(['id', 'title', 'description', 'start_date', 'end_date']);
+
+        return response()->json([
+            'events_today' => $eventsToday,
+            'events_this_week' => $eventsThisWeek,
+            'pending_events' => $pendingEvents,
+            'pending_announcements' => $pendingAnnouncements,
+            'total_registrations' => $totalRegistrations,
+            'chart_labels' => $labels,
+            'chart_values' => $values,
+            'week_events' => $weekEvents,
+        ]);
     }
 
-    public function organization(): BelongsTo
+    public function orgDashboard(Request $request)
     {
-        return $this->belongsTo(Organization::class);
-    }
+        $orgId = $request->user()->organization_id;
+        $today = Carbon::today();
+        $monthStart = $today->copy()->startOfMonth();
+        $monthEnd = $today->copy()->endOfMonth();
 
-    public function createdBy(): BelongsTo
-    {
-        return $this->belongsTo(User::class, 'created_by');
-    }
+        $upcomingEvents = Event::where('organization_id', $orgId)
+            ->where('status', 'published')
+            ->whereDate('start_date', '>=', $today)
+            ->count();
 
-    public function location(): BelongsTo
-    {
-        return $this->belongsTo(Location::class);
-    }
+        $monthlyRegistrations = EventRegistration::whereHas('event', function($q) use ($orgId, $monthStart, $monthEnd) {
+            $q->where('organization_id', $orgId)
+                ->where('status', 'published')
+                ->whereBetween('start_date', [$monthStart, $monthEnd]);
+        })->count();
 
-    public function registrations()
-    {
-        return $this->hasMany(EventRegistration::class);
+        $events = Event::where('organization_id', $orgId)
+            ->where('status', 'published')
+            ->withCount('registrations')
+            ->orderBy('start_date', 'desc')
+            ->get();
+
+        $avgRegistrations = $events->isNotEmpty() ? round($events->avg('registrations_count')) : 0;
+
+        $labels = $events->pluck('title')->toArray();
+        $values = $events->pluck('registrations_count')->toArray();
+
+        $weekStart = $today->copy()->startOfWeek();
+        $weekEnd = $today->copy()->endOfWeek();
+
+        $weekEvents = Event::where('organization_id', $orgId)
+            ->where('status', 'published')
+            ->withCount('registrations')
+            ->whereDate('start_date', '<=', $weekEnd)
+            ->whereDate('end_date', '>=', $weekStart)
+            ->orderBy('start_date')
+            ->get(['id', 'title', 'description', 'start_date', 'end_date']);
+
+        $recentAnnouncements = Announcement::where('organization_id', $orgId)
+            ->where('status', 'published')
+            ->latest('published_at')
+            ->take(5)
+            ->get(['id', 'title', 'published_at']);
+
+        return response()->json([
+            'upcoming_events' => $upcomingEvents,
+            'monthly_registrations' => $monthlyRegistrations,
+            'avg_registrations' => $avgRegistrations,
+            'chart_labels' => $labels,
+            'chart_values' => $values,
+            'week_events' => $weekEvents,
+            'recent_announcements' => $recentAnnouncements,
+        ]);
     }
 }

@@ -62,6 +62,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user/registrations', [EventController::class, 'myRegistrations']);
     Route::post('/events/{event}/register', [EventController::class, 'register']);
     Route::delete('/events/{event}/register', [EventController::class, 'cancelRegistration']);
+    Route::get('/events/{event}/registrations', [EventController::class, 'getRegistrations']);
 
     Route::get('/announcements', [AnnouncementController::class, 'index']);
     Route::get('/announcements/{announcement}', [AnnouncementController::class, 'show']);

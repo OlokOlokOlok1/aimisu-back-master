@@ -184,7 +184,6 @@ class EventController extends Controller
         ]);
     }
 
-
     public function cancelRegistration(Request $request, Event $event)
     {
         EventRegistration::where('event_id', $event->id)
@@ -194,6 +193,20 @@ class EventController extends Controller
         return response()->json([
             'message' => 'Registration cancelled',
             'registrations_count' => $event->registrations()->count(),
+        ]);
+    }
+
+    // ✅ ADD THIS METHOD
+    public function getRegistrations(Event $event)
+    {
+        $registrations = $event->registrations()
+            ->with('user:id,name,email')
+            ->latest('created_at')
+            ->get();
+
+        return response()->json([
+            'count' => $registrations->count(),
+            'data' => $registrations,
         ]);
     }
 }

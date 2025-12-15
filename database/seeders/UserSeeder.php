@@ -15,119 +15,83 @@ class UserSeeder extends Seeder
         $coe = Department::where('code', 'COE')->first();
         $cas = Department::where('code', 'CAS')->first();
 
-        $acm = Organization::where('name', 'ACM Student Chapter')->first()
-            ?? Organization::create([
-                'name' => 'ACM Student Chapter',
-                'code' => 'ACM',
-                'department_id' => $coe?->id,
-            ]);
+        $acm = Organization::where('code', 'ACM')->first()
+            ?? Organization::create(['name' => 'ACM Student Chapter', 'code' => 'ACM', 'department_id' => $coe?->id]);
 
-        $ieee = Organization::where('name', 'IEEE Student Branch')->first()
-            ?? Organization::create([
-                'name' => 'IEEE Student Branch',
-                'code' => 'IEEE',
-                'department_id' => $coe?->id,
-            ]);
+        $ieee = Organization::where('code', 'IEEE')->first()
+            ?? Organization::create(['name' => 'IEEE Student Branch', 'code' => 'IEEE', 'department_id' => $coe?->id]);
 
-        $ssc = Organization::where('name', 'Supreme Student Council')->first();
-        $englishClub = Organization::where('name', 'English Club')->first();
-        $forum = Organization::where('name', 'The Forum Publication')->first();
+        $ssc = Organization::where('code', 'SSC')->first();
+        $englishClub = Organization::where('code', 'ENG')->first();
+        $forum = Organization::where('code', 'TFP')->first();
 
-        // Admin
-        User::firstOrCreate(
-            ['email' => 'admin@aimisu.edu.ph'],
-            [
-                'name' => 'System Admin',
-                'password' => Hash::make('password'),
-                'role' => 'admin',
-                'department_id' => null,
-                'organization_id' => null,
-            ]
-        );
+        $this->createAdmins($coe, $cas, $acm, $ieee, $ssc, $englishClub, $forum);
 
-        // Org Admins
-        User::firstOrCreate(
-            ['email' => 'orgadmin@aimisu.edu.ph'],
-            [
-                'name' => 'ACM Admin',
-                'password' => Hash::make('password'),
-                'role' => 'org_admin',
-                'department_id' => $coe?->id,
-                'organization_id' => $acm?->id,
-            ]
-        );
+        $this->createStudentsInBatches(1000);
 
-        User::firstOrCreate(
-            ['email' => 'ieeeadmin@aimisu.edu.ph'],
-            [
-                'name' => 'IEEE Admin',
-                'password' => Hash::make('password'),
-                'role' => 'org_admin',
-                'department_id' => $coe?->id,
-                'organization_id' => $ieee?->id,
-            ]
-        );
+        $this->command->line('✅ Users seeded: ' . User::count());
+    }
 
-        if ($englishClub) {
+    private function createAdmins($coe, $cas, $acm, $ieee, $ssc, $englishClub, $forum)
+    {
+        $admins = [
+            ['email' => 'admin@aimisu.edu.ph', 'name' => 'System Admin', 'role' => 'admin'],
+            ['email' => 'orgadmin@aimisu.edu.ph', 'name' => 'ACM Admin', 'role' => 'org_admin'],
+            ['email' => 'ieeeadmin@aimisu.edu.ph', 'name' => 'IEEE Admin', 'role' => 'org_admin'],
+            ['email' => 'englishadmin@aimisu.edu.ph', 'name' => 'English Club Admin', 'role' => 'org_admin'],
+            ['email' => 'sscadmin@aimisu.edu.ph', 'name' => 'SSC Admin', 'role' => 'org_admin'],
+            ['email' => 'forumadmin@aimisu.edu.ph', 'name' => 'Forum Admin', 'role' => 'org_admin'],
+        ];
+
+        foreach ($admins as $admin) {
             User::firstOrCreate(
-                ['email' => 'englishadmin@aimisu.edu.ph'],
+                ['email' => $admin['email']],
                 [
-                    'name' => 'English Club Admin',
+                    'name' => $admin['name'],
                     'password' => Hash::make('password'),
-                    'role' => 'org_admin',
-                    'department_id' => $cas?->id,
-                    'organization_id' => $englishClub->id,
+                    'role' => $admin['role'],
+                    'phone' => null,
+                    'profile_photo_url' => null,
                 ]
             );
         }
 
-        if ($ssc) {
-            User::firstOrCreate(
-                ['email' => 'sscadmin@aimisu.edu.ph'],
-                [
-                    'name' => 'SSC Admin',
-                    'password' => Hash::make('password'),
-                    'role' => 'org_admin',
-                    'department_id' => null,
-                    'organization_id' => $ssc->id,
-                ]
-            );
+        $this->command->line("Created " . count($admins) . " admin/org users");
+    }
+
+    private function createStudentsInBatches($total)
+    {
+        $departments = Department::pluck('id')->toArray();
+        $organizations = Organization::pluck('id')->toArray();
+
+        if (empty($departments) || empty($organizations)) {
+            $this->command->warn('No departments or organizations found. Create them first.');
+            return;
         }
 
-        if ($forum) {
-            User::firstOrCreate(
-                ['email' => 'forumadmin@aimisu.edu.ph'],
-                [
-                    'name' => 'The Forum Publication Admin',
-                    'password' => Hash::make('password'),
-                    'role' => 'org_admin',
-                    'department_id' => null,          // campus-wide
-                    'organization_id' => $forum->id,
-                ]
-            );
+        $batchSize = 100;
+        $password = Hash::make('password');
+
+        for ($i = 0; $i < $total; $i += $batchSize) {
+            $users = [];
+            $remaining = min($batchSize, $total - $i);
+
+            for ($j = 0; $j < $remaining; $j++) {
+                $users[] = [
+                    'name' => fake()->name(),
+                    'email' => fake()->unique()->safeEmail(),
+                    'password' => $password,
+                    'role' => 'user',
+                    'phone' => fake()->phoneNumber(),
+                    'profile_photo_url' => null,
+                    'email_verified_at' => now(),
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ];
+            }
+
+            User::insert($users);
+            $this->command->line("✅ Inserted users " . ($i + $remaining) . "/$total");
         }
-
-        // Regular Users
-        User::firstOrCreate(
-            ['email' => 'user@aimisu.edu.ph'],
-            [
-                'name' => 'Regular User',
-                'password' => Hash::make('password'),
-                'role' => 'user',
-                'department_id' => $coe?->id,
-                'organization_id' => $acm?->id,
-            ]
-        );
-
-        User::firstOrCreate(
-            ['email' => 'user1@aimisu.edu.ph'],
-            [
-                'name' => 'CAS User',
-                'password' => Hash::make('password'),
-                'role' => 'user',
-                'department_id' => $cas?->id,
-                'organization_id' => $englishClub?->id,
-            ]
-        );
     }
 }

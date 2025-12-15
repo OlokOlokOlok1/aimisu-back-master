@@ -3,430 +3,107 @@
 namespace Database\Seeders;
 
 use App\Models\Event;
+use App\Models\Organization;
+use App\Models\Location;
+use App\Models\User;
 use Illuminate\Database\Seeder;
+use Carbon\Carbon;
 
 class EventSeeder extends Seeder
 {
-    public function run()
+    public function run(): void
     {
-        Event::firstOrCreate(
-            ['title' => 'ISU Opening Convocation 2025'],
-            [
-                'description' => 'Welcome event for all new ISU students.',
-                'category' => 'academic',
-                'start_date' => '2025-08-10',
-                'end_date' => '2025-08-10',
-                'location_id' => 1,
-                'organization_id' => 1,
-                'department_id' => null,
-                'created_by' => 2,
-                'status' => 'published',
-                'daily_times' => json_encode(['2025-08-10' => '08:00-17:00']),
-                'published_at' => now(),
-            ]
-        );
+        $organizations = Organization::all();
+        $locations = Location::all();
+        $users = User::where('role', 'org_admin')->get();
 
-        // Social Events
-        Event::firstOrCreate(
-            ['title' => 'Year-End Campus Assembly 2025'],
-            [
-                'description' => 'Closing gathering for all students and staff before the holiday break.',
-                'category' => 'social',
-                'start_date' => '2025-12-02',
-                'end_date' => '2025-12-02',
-                'location_id' => 1,
-                'organization_id' => 1,
-                'department_id' => null,
-                'created_by' => 2,
-                'status' => 'published',
-                'daily_times' => json_encode(['2025-12-02' => '09:00-17:00']),
-                'published_at' => now(),
-            ]
-        );
+        if ($organizations->isEmpty() || $locations->isEmpty() || $users->isEmpty()) {
+            $this->command->warn('Missing organizations, locations, or users.');
+            return;
+        }
 
-        Event::firstOrCreate(
-            ['title' => 'Computer Science Research Colloquium'],
-            [
-                'description' => 'Student and faculty presentations on recent research projects.',
-                'category' => 'academic',
-                'start_date' => '2025-12-03',
-                'end_date' => '2025-12-03',
-                'location_id' => 1,
-                'organization_id' => 1,
-                'department_id' => 1,
-                'created_by' => 2,
-                'status' => 'published',
-                'daily_times' => json_encode(['2025-12-03' => '13:00-18:00']),
-                'published_at' => now(),
-            ]
-        );
+        $titles = [
+            'Welcome Freshman Orientation',
+            'Tech Conference 2025',
+            'Sports Day Championship',
+            'Cultural Fiesta',
+            'Research Symposium',
+            'Alumni Networking Night',
+            'Career Fair',
+            'Hackathon Challenge',
+            'Academic Seminar Series',
+            'Student Leadership Summit',
+            'Arts Exhibition Opening',
+            'Science Fair 2025',
+            'Photography Workshop',
+            'Film Festival',
+            'Health & Wellness Fair',
+            'Debate Championship',
+            'Music Concert Series',
+            'Entrepreneurship Summit',
+        ];
 
-        Event::firstOrCreate(
-            ['title' => 'Student Organizations General Assembly'],
-            [
-                'description' => 'Coordination meeting for all recognized student organizations.',
-                'category' => 'social',
-                'start_date' => '2025-12-04',
-                'end_date' => '2025-12-04',
-                'location_id' => 1,
-                'organization_id' => 1,
-                'department_id' => null,
-                'created_by' => 2,
-                'status' => 'published',
-                'daily_times' => json_encode(['2025-12-04' => '10:00-16:00']),
-                'published_at' => now(),
-            ]
-        );
+        $descriptions = [
+            'Join us for an exciting orientation program for new students.',
+            'A comprehensive conference featuring the latest in technology.',
+            'Compete in various sports competitions and enjoy the festivities.',
+            'Celebrate diverse cultures with performances and food.',
+            'Showcase groundbreaking research from our departments.',
+            'Network with successful alumni and industry professionals.',
+            'Meet top companies recruiting for graduates.',
+            'Team up and build amazing projects in 48 hours.',
+            'Expert speakers discussing current academic topics.',
+            'Learn leadership skills from industry leaders.',
+            'View exceptional student artwork and installations.',
+            'Students present their scientific experiments.',
+            'Learn mobile and DSLR photography basics.',
+            'Showcase of independent and student-made films.',
+            'Mental health awareness and wellness consultations.',
+            'Inter-collegiate debate tournament finals.',
+            'Live performances from student and local artists.',
+            'Networking and pitch competition for startups.',
+        ];
 
-        Event::firstOrCreate(
-            ['title' => 'ISU Career and Internship Fair'],
-            [
-                'description' => 'Companies and partner organizations offering internship and job opportunities.',
-                'category' => 'academic',
-                'start_date' => '2025-12-05',
-                'end_date' => '2025-12-05',
-                'location_id' => 1,
-                'organization_id' => 1,
-                'department_id' => null,
-                'created_by' => 2,
-                'status' => 'published',
-                'daily_times' => json_encode(['2025-12-05' => '09:00-17:00']),
-                'published_at' => now(),
-            ]
-        );
+        $categories = ['academic', 'sports', 'cultural', 'social', 'other'];
 
-        Event::firstOrCreate(
-            ['title' => 'Community Outreach Planning Session'],
-            [
-                'description' => 'Planning session for the college community extension program.',
-                'category' => 'other',
-                'start_date' => '2025-12-06',
-                'end_date' => '2025-12-06',
-                'location_id' => 1,
-                'organization_id' => 1,
-                'department_id' => 2,
-                'created_by' => 2,
-                'status' => 'published',
-                'daily_times' => json_encode(['2025-12-06' => '14:00-18:00']),
-                'published_at' => now(),
-            ]
-        );
+        $eventCount = 0;
+        for ($dayOffset = -60; $dayOffset <= 60; $dayOffset += 3) {
+            $startDate = Carbon::now()->addDays($dayOffset);
+            $endDate = $startDate->copy()->addDays(rand(0, 2));
 
-        Event::firstOrCreate(
-            ['title' => 'Intramurals Championship Day'],
-            [
-                'description' => 'Final games and awarding for the 2025 intramurals.',
-                'category' => 'sports',
-                'start_date' => '2025-12-07',
-                'end_date' => '2025-12-07',
-                'location_id' => 1,
-                'organization_id' => 1,
-                'department_id' => null,
-                'created_by' => 2,
-                'status' => 'published',
-                'daily_times' => json_encode(['2025-12-07' => '08:00-17:00']),
-                'published_at' => now(),
-            ]
-        );
+            $creator = $users->random();
+            $org = $organizations->firstWhere('id', $creator->organization_id) ?? $organizations->random();
+            $location = $locations->random();
 
-        Event::firstOrCreate(
-            ['title' => 'IT Department Project Showcase'],
-            [
-                'description' => 'Capstone and major project presentations from IT students.',
-                'category' => 'academic',
-                'start_date' => '2025-12-08',
-                'end_date' => '2025-12-08',
-                'location_id' => 1,
-                'organization_id' => 1,
-                'department_id' => 1,
-                'created_by' => 2,
-                'status' => 'published',
-                'daily_times' => json_encode(['2025-12-08' => '10:00-17:00']),
-                'published_at' => now(),
-            ]
-        );
+            $dailyTimes = [];
+            $current = $startDate->copy();
+            while ($current <= $endDate) {
+                $startTime = sprintf('%02d:00', rand(9, 17));
+                $endTime = sprintf('%02d:00', rand(18, 20));
+                $dailyTimes[$current->format('Y-m-d')] = "{$startTime}-{$endTime}";
+                $current->addDay();
+            }
 
-        Event::firstOrCreate(
-            ['title' => 'Student Leadership Training Seminar'],
-            [
-                'description' => 'Leadership and governance training for student leaders.',
-                'category' => 'academic',
-                'start_date' => '2025-12-09',
-                'end_date' => '2025-12-09',
-                'location_id' => 1,
-                'organization_id' => 1,
-                'department_id' => null,
-                'created_by' => 2,
-                'status' => 'published',
-                'daily_times' => json_encode(['2025-12-09' => '09:00-17:00']),
-                'published_at' => now(),
-            ]
-        );
+            $status = $dayOffset < 0 ? 'published' : 'pending_approval';
 
-        Event::firstOrCreate(
-            ['title' => 'Library Extended Hours Review Week'],
-            [
-                'description' => 'Extended library hours to support students during finals review.',
-                'category' => 'academic',
-                'start_date' => '2025-12-10',
-                'end_date' => '2025-12-14',
-                'location_id' => 1,
-                'organization_id' => 1,
-                'department_id' => null,
-                'created_by' => 2,
-                'status' => 'published',
-                'daily_times' => json_encode([
-                    '2025-12-10' => '07:00-22:00',
-                    '2025-12-11' => '07:00-22:00',
-                    '2025-12-12' => '07:00-22:00',
-                    '2025-12-13' => '07:00-22:00',
-                    '2025-12-14' => '07:00-22:00',
-                ]),
-                'published_at' => now(),
-            ]
-        );
+            Event::create([
+                'title' => $titles[array_rand($titles)],
+                'description' => $descriptions[array_rand($descriptions)],
+                'category' => $categories[array_rand($categories)],
+                'start_date' => $startDate->toDateString(),
+                'end_date' => $endDate->toDateString(),
+                'daily_times' => $dailyTimes,
+                'location_id' => $location->id,
+                'organization_id' => $org->id,
+                'created_by' => $creator->id,
+                'status' => $status,
+                'published_at' => $status === 'published' ? $startDate->copy()->subDays(14) : null,
+                'created_at' => $startDate->copy()->subDays(rand(14, 30)),
+            ]);
 
-        Event::firstOrCreate(
-            ['title' => 'Christmas Lighting and Thanksgiving Program'],
-            [
-                'description' => 'Campus Christmas lighting ceremony and thanksgiving celebration.',
-                'category' => 'social',
-                'start_date' => '2025-12-15',
-                'end_date' => '2025-12-15',
-                'location_id' => 1,
-                'organization_id' => 1,
-                'department_id' => null,
-                'created_by' => 2,
-                'status' => 'published',
-                'daily_times' => json_encode(['2025-12-15' => '16:00-21:00']),
-                'published_at' => now(),
-            ]
-        );
+            $eventCount++;
+        }
 
-        // Additional diverse events for better analytics
-        Event::firstOrCreate(
-            ['title' => 'Photography Workshop Series'],
-            [
-                'description' => 'Learn mobile and DSLR photography basics.',
-                'category' => 'cultural',
-                'start_date' => '2025-12-16',
-                'end_date' => '2025-12-18',
-                'location_id' => 1,
-                'organization_id' => 2,
-                'department_id' => null,
-                'created_by' => 3,
-                'status' => 'published',
-                'daily_times' => json_encode([
-                    '2025-12-16' => '14:00-17:00',
-                    '2025-12-17' => '14:00-17:00',
-                    '2025-12-18' => '14:00-17:00',
-                ]),
-                'published_at' => now(),
-            ]
-        );
-
-        Event::firstOrCreate(
-            ['title' => 'Debate Championship Finals'],
-            [
-                'description' => 'Inter-collegiate debate tournament finals.',
-                'category' => 'academic',
-                'start_date' => '2025-12-19',
-                'end_date' => '2025-12-20',
-                'location_id' => 1,
-                'organization_id' => 2,
-                'department_id' => null,
-                'created_by' => 3,
-                'status' => 'published',
-                'daily_times' => json_encode([
-                    '2025-12-19' => '09:00-18:00',
-                    '2025-12-20' => '09:00-18:00',
-                ]),
-                'published_at' => now(),
-            ]
-        );
-
-        Event::firstOrCreate(
-            ['title' => 'Entrepreneurship Summit 2025'],
-            [
-                'description' => 'Networking and pitch competition for startup founders.',
-                'category' => 'academic',
-                'start_date' => '2025-12-21',
-                'end_date' => '2025-12-22',
-                'location_id' => 1,
-                'organization_id' => 2,
-                'department_id' => null,
-                'created_by' => 3,
-                'status' => 'published',
-                'daily_times' => json_encode([
-                    '2025-12-21' => '08:00-18:00',
-                    '2025-12-22' => '09:00-17:00',
-                ]),
-                'published_at' => now(),
-            ]
-        );
-
-        Event::firstOrCreate(
-            ['title' => 'New Year Cultural Fest'],
-            [
-                'description' => 'Celebrate diverse cultures with music, dance, and food.',
-                'category' => 'cultural',
-                'start_date' => '2025-12-28',
-                'end_date' => '2025-12-28',
-                'location_id' => 1,
-                'organization_id' => 2,
-                'department_id' => null,
-                'created_by' => 3,
-                'status' => 'published',
-                'daily_times' => json_encode(['2025-12-28' => '15:00-22:00']),
-                'published_at' => now(),
-            ]
-        );
-
-        Event::firstOrCreate(
-            ['title' => 'Tech Talks: AI & Machine Learning'],
-            [
-                'description' => 'Expert talks on latest trends in AI and ML applications.',
-                'category' => 'academic',
-                'start_date' => '2025-12-29',
-                'end_date' => '2025-12-29',
-                'location_id' => 1,
-                'organization_id' => 3,
-                'department_id' => 1,
-                'created_by' => 4,
-                'status' => 'published',
-                'daily_times' => json_encode(['2025-12-29' => '10:00-16:00']),
-                'published_at' => now(),
-            ]
-        );
-
-        Event::firstOrCreate(
-            ['title' => 'Health & Wellness Fair'],
-            [
-                'description' => 'Mental health awareness, fitness tips, and wellness consultations.',
-                'category' => 'social',
-                'start_date' => '2025-12-30',
-                'end_date' => '2025-12-30',
-                'location_id' => 1,
-                'organization_id' => 3,
-                'department_id' => 2,
-                'created_by' => 4,
-                'status' => 'published',
-                'daily_times' => json_encode(['2025-12-30' => '09:00-16:00']),
-                'published_at' => now(),
-            ]
-        );
-
-        Event::firstOrCreate(
-            ['title' => 'Gaming Tournament: Esports Edition'],
-            [
-                'description' => 'Competitive gaming tournament featuring League of Legends, Valorant, and more.',
-                'category' => 'sports',
-                'start_date' => '2026-01-02',
-                'end_date' => '2026-01-04',
-                'location_id' => 1,
-                'organization_id' => 3,
-                'department_id' => null,
-                'created_by' => 4,
-                'status' => 'published',
-                'daily_times' => json_encode([
-                    '2026-01-02' => '12:00-21:00',
-                    '2026-01-03' => '12:00-21:00',
-                    '2026-01-04' => '12:00-20:00',
-                ]),
-                'published_at' => now(),
-            ]
-        );
-
-        Event::firstOrCreate(
-            ['title' => 'Volunteer Orientation Program'],
-            [
-                'description' => 'Training and onboarding for student volunteers.',
-                'category' => 'other',
-                'start_date' => '2026-01-05',
-                'end_date' => '2026-01-05',
-                'location_id' => 1,
-                'organization_id' => 1,
-                'department_id' => null,
-                'created_by' => 2,
-                'status' => 'published',
-                'daily_times' => json_encode(['2026-01-05' => '10:00-14:00']),
-                'published_at' => now(),
-            ]
-        );
-
-        Event::firstOrCreate(
-            ['title' => 'Film Festival: Independent Cinema'],
-            [
-                'description' => 'Showcase of independent and student-made films with Q&A sessions.',
-                'category' => 'cultural',
-                'start_date' => '2026-01-08',
-                'end_date' => '2026-01-10',
-                'location_id' => 1,
-                'organization_id' => 2,
-                'department_id' => null,
-                'created_by' => 3,
-                'status' => 'published',
-                'daily_times' => json_encode([
-                    '2026-01-08' => '17:00-22:00',
-                    '2026-01-09' => '17:00-22:00',
-                    '2026-01-10' => '17:00-22:00',
-                ]),
-                'published_at' => now(),
-            ]
-        );
-
-        /*
-         * Pending events for dashboard/testing
-         */
-        Event::firstOrCreate(
-            ['title' => 'Draft: Student Hackathon Planning'],
-            [
-                'description' => 'Initial planning meeting for upcoming student hackathon.',
-                'category' => 'academic',
-                'start_date' => '2026-01-12',
-                'end_date' => '2026-01-12',
-                'location_id' => 1,
-                'organization_id' => 1,
-                'department_id' => 1,
-                'created_by' => 2,
-                'status' => 'pending_approval',
-                'daily_times' => json_encode(['2026-01-12' => '13:00-17:00']),
-                'published_at' => null,
-            ]
-        );
-
-        Event::firstOrCreate(
-            ['title' => 'Pending: Campus Cleanup Drive'],
-            [
-                'description' => 'Proposed campus-wide cleanup and environmental awareness activity.',
-                'category' => 'other',
-                'start_date' => '2026-01-15',
-                'end_date' => '2026-01-15',
-                'location_id' => 1,
-                'organization_id' => 2,
-                'department_id' => 2,
-                'created_by' => 3,
-                'status' => 'pending_approval',
-                'daily_times' => json_encode(['2026-01-15' => '08:00-12:00']),
-                'published_at' => null,
-            ]
-        );
-
-        Event::firstOrCreate(
-            ['title' => 'Pending: Mental Health Check-in Circles'],
-            [
-                'description' => 'Small group circles for students to talk about stress and coping.',
-                'category' => 'social',
-                'start_date' => '2026-01-20',
-                'end_date' => '2026-01-20',
-                'location_id' => 1,
-                'organization_id' => 3,
-                'department_id' => null,
-                'created_by' => 4,
-                'status' => 'pending_approval',
-                'daily_times' => json_encode(['2026-01-20' => '14:00-17:00']),
-                'published_at' => null,
-            ]
-        );
+        $this->command->line("✅ Created $eventCount events across 4 months");
     }
 }
